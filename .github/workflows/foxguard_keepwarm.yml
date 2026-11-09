@@ -1,4 +1,4 @@
-# FoxGuard keep-warm. Spec: Cairn, 2026-11-09 (cairn_working/security/foxguard_keepwarm_spec_2026-11-09.md).
+# FoxGuard keep-warm. Toggle and security notes are in the README.
 # Toggle: repo variable FOXGUARD_KEEPWARM = on | off. Anything other than "on" (including unset) = off.
 # When off, the job is skipped, and a skipped job uses no Actions minutes.
 name: foxguard-keepwarm
