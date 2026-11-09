@@ -1,0 +1,31 @@
+# FoxGuard keep-warm. Spec: Cairn, 2026-11-09 (cairn_working/security/foxguard_keepwarm_spec_2026-11-09.md).
+# Toggle: repo variable FOXGUARD_KEEPWARM = on | off. Anything other than "on" (including unset) = off.
+# When off, the job is skipped, and a skipped job uses no Actions minutes.
+name: foxguard-keepwarm
+
+on:
+  schedule:
+    - cron: "4-59/10 * * * *"   # every 10 min, offset from :00 (the top of the hour is when GitHub delays or drops scheduled runs most)
+  workflow_dispatch: {}
+
+permissions: {}                  # the job token gets no scopes; it reads nothing and writes nothing
+
+concurrency:
+  group: foxguard-keepwarm
+  cancel-in-progress: true
+
+jobs:
+  ping:
+    if: ${{ vars.FOXGUARD_KEEPWARM == 'on' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      # No checkout and no third-party actions: nothing to pin, no supply-chain surface. One GET, nothing secret.
+      - name: GET /health
+        run: |
+          code=$(curl -sS -o /dev/null -w '%{http_code}' --max-time 90 --retry 2 --retry-delay 10 \
+                 https://foxguard-api.onrender.com/health) || code=000
+          echo "foxguard /health -> ${code}"
+          # Exit 0 even when the status is not 200: this job exists to keep the service warm, not to alert.
+          # A failing scheduled run emails its author every 10 minutes during an outage.
+          exit 0
